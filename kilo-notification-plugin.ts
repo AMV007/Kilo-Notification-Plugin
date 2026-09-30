@@ -56,7 +56,7 @@ const EVENTS: Record<string, string> = {
 };
 
 export default {
-  id: "espeak-notification",
+  id: "notification",
   server: async ({ client }: { client: any }) => ({
     event: async ({ event }: { event: any }) => {
       const kind = EVENTS[event.type];

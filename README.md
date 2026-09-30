@@ -1,10 +1,10 @@
-# kilo-espeak-plugin
+# kilo-notification-plugin
 
-A [Kilo](https://kilo.ai) server plugin that runs a script of your choice when a session becomes idle asks for a permission or asks a question, so you know the agent has finished or is waiting for you. The script can speak (espeak, RHVoice), show a desktop notification, send a message, etc.
+A [Kilo](https://kilo.ai) server plugin that runs a script of your choice when a session becomes idle, asks for a permission, or asks a question, so you know the agent has finished or is waiting for you. The script can show a desktop notification, send a message, or use any other notification channel.
 
 ## How it works
 
-The plugin (`kilo-espeak-plugin.ts`) subscribes to Kilo events and reacts to `session.idle` (agent finished) `permission.asked` (agent waits for a permission) and `question.asked` (agent asks you a question):
+The plugin (`kilo-notification-plugin.ts`) subscribes to Kilo events and reacts to `session.idle` (agent finished), `permission.asked` (agent waits for a permission) and `question.asked` (agent asks you a question):
 
 1. Reads `sessionID` from the event properties.
 2. Fetches the session via `client.session.get({ sessionID })` and takes its title and directory.
@@ -22,14 +22,15 @@ Errors are caught and logged to the console; a failed notification never breaks 
 
 ## Installation
 
-1. Place `kilo-espeak-plugin.ts` in `~/.config/kilo/plugins/`.
-2. Register the plugin in the Kilo config (`~/.config/kilo/kilo.jsonc`):
+1. Place `kilo-notification-plugin.ts` and `install-plugin.sh` in `~/.config/kilo/plugins/`.
+2. Register the plugin by running:
 
-   ```jsonc
-   "plugin": [
-     "./plugins/kilo-espeak-plugin.ts"
-   ]
+   ```bash
+   cd ~/.config/kilo/plugins
+   ./install-plugin.sh
    ```
+
+   The script creates `~/.config/kilo/kilo.jsonc` when needed, adds the path to `kilo-notification-plugin.ts` relative to the config (for example, `./plugins/kilo-notification-plugin/kilo-notification-plugin.ts`), and saves a `.bak` copy before modifying an existing config.
 
 3. Set the script via the environment (e.g. in `~/.profile` or `~/.bashrc`):
 
@@ -44,7 +45,7 @@ Errors are caught and logged to the console; a failed notification never breaks 
 | What | How |
 | --- | --- |
 | Script to run (full path or command name) | `KILO_NOTIFY_SCRIPT` env var; if unset, the plugin does nothing |
-| Max spoken title length | `MAX_TITLE_LENGTH` (80) |
+| Max title length | `MAX_TITLE_LENGTH` (80) |
 | VS Code user settings file (auto-approve switch) | `KILO_VSCODE_SETTINGS` env var; default `~/.config/Code/User/settings.json` |
 
 ### Script contract
@@ -60,9 +61,9 @@ Example wrapper with different phrases per event:
 ```bash
 #!/usr/bin/env bash
 case "$1" in
-  permission) espeak "Кило просит разрешение${2:+ в $2}" ;;
-  question)   espeak "Кило задаёт вопрос${2:+ в $2}" ;;
-  *)          espeak "Кило закончил работу${2:+ в $2}, жду распоряжений" ;;
+  permission) notify-send "Кило просит разрешение${2:+ в $2}" ;;
+  question)   notify-send "Кило задаёт вопрос${2:+ в $2}" ;;
+  *)          notify-send "Кило закончил работу${2:+ в $2}, жду распоряжений" ;;
 esac
 ```
 
