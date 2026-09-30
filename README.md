@@ -22,23 +22,21 @@ Errors are caught and logged to the console; a failed notification never breaks 
 
 ## Installation
 
-1. Place `kilo-notification-plugin.ts` and `install-plugin.sh` in `~/.config/kilo/plugins/`.
-2. Register the plugin by running:
+1. Run the installer from wherever the repository is:
 
    ```bash
-   cd ~/.config/kilo/plugins
    ./install-plugin.sh
    ```
 
-   The script creates `~/.config/kilo/kilo.jsonc` when needed, adds the path to `kilo-notification-plugin.ts` relative to the config (for example, `./plugins/kilo-notification-plugin/kilo-notification-plugin.ts`), and saves a `.bak` copy before modifying an existing config.
+   When run from anywhere other than `~/.config/kilo/plugins/kilo-notification-plugin`, the script first copies the plugin files (`kilo-notification-plugin.ts`, `README.md` and the installer itself) into that directory. It then creates `~/.config/kilo/kilo.jsonc` when needed, registers the plugin as `./plugins/kilo-notification-plugin/kilo-notification-plugin.ts` relative to the config, and saves a `.bak` copy before modifying an existing config.
 
-3. Set the script via the environment (e.g. in `~/.profile` or `~/.bashrc`):
+2. Set the script via the environment (e.g. in `~/.profile` or `~/.bashrc`):
 
    ```bash
    export KILO_NOTIFY_SCRIPT=/path/to/your/script
    ```
 
-4. Restart Kilo.
+3. Restart Kilo.
 
 ## Configuration
 
