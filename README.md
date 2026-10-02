@@ -7,8 +7,8 @@ A [Kilo](https://kilo.ai) server plugin that runs a script of your choice when a
 The plugin (`kilo-notification-plugin.ts`) subscribes to Kilo events and reacts to `session.idle` (agent finished), `permission.asked` (agent waits for a permission) and `question.asked` (agent asks you a question):
 
 1. Reads `sessionID` from the event properties.
-2. Fetches the session via `client.session.get({ sessionID })` and takes its title and directory.
-3. Skips `permission.asked` when auto-approve of the Kilo VS Code extension is on. That auto-approve works on the client side (the server still emits the request and the extension answers it), so the plugin reads the `kilo-code.new.autoApprove.enabled` setting: from `<session dir>/.vscode/settings.json` first, then from the VS Code user settings. Sandbox escalation requests are never auto-approved, so they are still announced.
+2. Fetches the session via `client.session.get({ sessionID })` and takes its title.
+3. Skips `permission.asked` when the request gets answered right away. Auto-approve of the Kilo VS Code extension works on the client side: the server still emits the request and the extension answers it with `permission.replied`. So the plugin waits a short grace period (1.5 s) and announces the request only if no reply came. It does not read the VS Code settings, so it works the same wherever the Kilo server runs (e.g. in a dev container, where the VS Code user settings are not visible). Requests that are not auto-approved (e.g. sandbox escalation) get no reply and are announced.
 4. Truncates the title to 80 characters. Idle events of sub-agent sessions are skipped; permission requests and questions are not, since they block the work.
 5. Queues a run of the script from `KILO_NOTIFY_SCRIPT`, passing the event name and the title as arguments (see below). It uses `execFile` without a shell, so the title cannot inject commands.
 
@@ -44,7 +44,7 @@ Errors are caught and logged to the console; a failed notification never breaks 
 | --- | --- |
 | Script to run (full path or command name) | `KILO_NOTIFY_SCRIPT` env var; if unset, the plugin does nothing |
 | Max title length | `MAX_TITLE_LENGTH` (80) |
-| VS Code user settings file (auto-approve switch) | `KILO_VSCODE_SETTINGS` env var; default `~/.config/Code/User/settings.json` |
+| How long to wait for an auto-approve reply before announcing a permission request | `KILO_PERMISSION_GRACE_MS` env var; default `1500` |
 
 ### Script contract
 
@@ -75,6 +75,7 @@ Test the script on its own:
 
 - The `client` and `event` types are `any`.
 - Runs are queued, so a slow script delays later notifications.
+- Permission requests are announced after the grace period, not instantly.
 
 ## License
 
